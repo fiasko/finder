@@ -25,6 +25,7 @@ int main(int argc, const char* argv[])
 
     std::cout << "Hello, World! with "<< cpuCoreCount <<" CPU cores! argc="<< argc << std::endl;
     //  X "..\\..\\..\\test\\testdata\\*.*"
+    //searchParam.value().searchPath = "..\\..\\..\\test\\testdata\\*32*";
     PathCrawler crawler(searchParam.value());
     return 0;
 }

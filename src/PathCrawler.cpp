@@ -27,7 +27,12 @@ PathCrawler::PathCrawler(const Finder::SearchParameters& settings)
 		{
 			std::cout << "filename has wildcards [" << settings.searchPath.filename().string() << "]\n";
 
-			GetFileList(fs::absolute(settings.searchPath), settings.searchPath.filename().string());
+			auto filelist = GetFileList(fs::absolute(settings.searchPath), settings.searchPath.filename().string(), settings.bRecursive);
+
+			for (const auto& p : filelist)
+			{
+				std::cout << "Path match: " << p.string() << std::endl;
+			}
 		}
 		else
 		{
@@ -60,21 +65,35 @@ std::string PathCrawler::ConvertWildcardsToRegexp(const std::string& wcs)
 	return  "^" + searchPattern + "$";
 }
 
-std::vector<std::string> PathCrawler::GetFileList(const std::filesystem::path& directory, const std::string& filenamePattern)
+std::vector<std::filesystem::path> PathCrawler::GetFileList(const std::filesystem::path& directory, const std::string& filenamePattern, const bool bRecursive)
 {
-	std::vector<std::string> fileList;
+	std::vector<fs::path> fileList;
 
 	std::string searchPatter = ConvertWildcardsToRegexp(filenamePattern);
 	
-	std::cout << "searchPattern: " << searchPatter << std::endl;
+	std::cout << "file name searchPattern: " << searchPatter << std::endl;
 
 	std::regex regex(searchPatter);
 
-	for (auto const& directory : std::filesystem::directory_iterator{ directory.parent_path()})
+	auto MathcFile = [&regex](const fs::path& dir) -> bool { return (fs::is_regular_file(dir) && std::regex_match(dir.filename().string(), regex)); };
+
+	if (bRecursive)
 	{
-		if (std::filesystem::is_regular_file(directory)) {
-			if (std::regex_match(directory.path().filename().string(), regex)) {
-				std::cout << directory.path() << '\n';
+		for (auto const& directory : fs::recursive_directory_iterator{ directory.parent_path() })
+		{
+			if (MathcFile(directory.path()))
+			{
+				fileList.push_back(directory.path());
+			}
+		}
+	}
+	else
+	{
+		for (auto const& directory : fs::directory_iterator{ directory.parent_path() })
+		{
+			if (MathcFile(directory.path()))
+			{
+				fileList.push_back(directory.path());
 			}
 		}
 	}
