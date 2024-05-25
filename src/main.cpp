@@ -1,45 +1,22 @@
 #include <iostream>
 #include <thread>
-
+#include <optional>
 #include <filesystem>
 
 #include "finderSettings.h"
-#include "Crawler.h"
+#include "PathCrawler.h"
 
-using namespace std::literals;
 
-int main(int argc, char* argv[]) {
-  
-    SearchParameters searchParam = { false, false, "", "" };
+int main(int argc, const char* argv[])
+{
+    // parse finder settings from arguments 
+    auto searchParam = Finder::ParseArguments(argc, argv);
 
-    for (int i = 1; i < argc; i++)
+    // Print help and break if needed
+    if (!searchParam.has_value())
     {
-        if ("-r"s == argv[i])
-        {
-            searchParam.bRecursive = true;
-        }
-        else if ("-r"s == argv[i])
-        {
-            searchParam.bRegExpPatter = true;
-        }
-        else if (searchParam.searchPattern.empty())
-        {
-            searchParam.searchPattern = argv[i];
-        }
-        else if (searchParam.searchPath.empty())
-        {
-            searchParam.searchPath = argv[i];
-        }
-        else
-        {
-            PrintHelp();
-            return 1;
-        }
-    }
-
-    if (searchParam.searchPath.empty())
-    {
-        searchParam.searchPath = ".";
+        Finder::PrintHelp();
+        return 1;
     }
 
 
@@ -48,6 +25,6 @@ int main(int argc, char* argv[]) {
 
     std::cout << "Hello, World! with "<< cpuCoreCount <<" CPU cores! argc="<< argc << std::endl;
     //  X "..\\..\\..\\test\\testdata\\*.*"
-    Crawler c(searchParam.searchPath);
+    PathCrawler crawler(searchParam.value());
     return 0;
 }
