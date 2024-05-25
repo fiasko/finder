@@ -1,0 +1,20 @@
+ Operation      Count    AvgLat    MaxLat
+ ----------------------------------------
+ NTCreateX    10478140     0.091   421.317
+ Close        7696978     0.011   373.921
+ Rename        443709     0.096   326.986
+ Unlink       2115976     0.286   382.249
+ Deltree          256    35.504  1179.876
+ Mkdir            128     0.003     0.009
+ Qpathinfo    9497296     0.037   352.364
+ Qfileinfo    1664106     0.006   237.256
+ Qfsinfo      1741429     0.593   429.166
+ Sfileinfo     853574     0.017   367.236
+ Find         3671797     0.101   368.113
+ WriteX       5222492     0.199  3144.094
+ ReadX        16425830     0.016   343.210
+ LockX          34124     0.012   167.346
+ UnlockX        34124     0.008   127.260
+ Flush         734373    17.763  1845.846
+
+Throughput 548.052 MB/sec  32 clients  32 procs  max_latency=3144.098 ms
