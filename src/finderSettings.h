@@ -1,4 +1,6 @@
-#pragma once
+#ifndef FINDERSETTINGS_H_
+#define FINDERSETTINGS_H_
+
 #include <iostream>
 #include <string>
 #include <filesystem>
@@ -8,10 +10,10 @@ namespace Finder
 {
     struct SearchParameters
     {
-        bool bRecursive;
-        bool bRegExpPatter;
-        std::string searchPattern;
-        std::filesystem::path searchPath;
+        bool recursive;
+        bool reg_exp_patter;
+        std::string search_pattern;
+        std::filesystem::path search_path;
     };
 
     static void PrintHelp()
@@ -32,19 +34,19 @@ namespace Finder
         {
             if ("-r"s == argv[i])
             {
-                searchParam.bRecursive = true;
+                searchParam.recursive = true;
             }
             else if ("-G"s == argv[i])
             {
-                searchParam.bRegExpPatter = true;
+                searchParam.reg_exp_patter = true;
             }
-            else if (searchParam.searchPattern.empty())
+            else if (searchParam.search_pattern.empty())
             {
-                searchParam.searchPattern = argv[i];
+                searchParam.search_pattern = argv[i];
             }
-            else if (searchParam.searchPath.empty())
+            else if (searchParam.search_path.empty())
             {
-                searchParam.searchPath = argv[i];
+                searchParam.search_path = argv[i];
             }
             else
             {
@@ -52,11 +54,13 @@ namespace Finder
             }
         }
 
-        if (searchParam.searchPath.empty())
+        if (searchParam.search_path.empty())
         {
-            searchParam.searchPath = ".";
+            searchParam.search_path = ".";
         }
 
         return searchParam;
     }
 }
+
+#endif  // FINDERSETTINGS_H_

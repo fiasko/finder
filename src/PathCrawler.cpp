@@ -5,98 +5,130 @@
 namespace fs = std::filesystem;
 
 PathCrawler::PathCrawler(const Finder::SearchParameters& settings)
+	: search_params_(settings),
+	single_file_(false),
+	complete_(false)
 {
-	if (fs::exists(settings.searchPath))
+	if (fs::exists(search_params_.search_path) && fs::is_regular_file(search_params_.search_path))
 	{
-		std::cout << "[" << fs::absolute(settings.searchPath).string() << "] ";
-		std::cout << settings.searchPath.filename().string();
+		single_file_ = true;
+		//std::cout << std::endl << search_params_.search_path.filename().string() << " is a regular file\n";
 
-		if (fs::is_regular_file(settings.searchPath))
+		//std::cout << "[" << fs::absolute(search_params_.search_path).string() << "] ";
+		//std::cout << search_params_.search_path.filename().string();
+		
+	}
+	else if (fs::exists(search_params_.search_path) && (fs::is_directory(search_params_.search_path)))
+	{
+		//std::cout << " is a directory\n";
+
+		path_search_pattern_ = ".*";
+
+		if (search_params_.recursive)
 		{
-			std::cout << std::endl << settings.searchPath.filename().string() << " is a regular file\n";
+			recursive_directory_iterator_ = fs::recursive_directory_iterator{ search_params_.search_path };
 		}
-		else if (fs::is_directory(settings.searchPath))
+		else
 		{
-			std::cout << " is a directory\n";
+			directory_iterator_ = fs::directory_iterator{ search_params_.search_path };
 		}
 	}
-	else if (fs::exists(settings.searchPath.parent_path()))
+	else if (fs::exists(search_params_.search_path.parent_path()))
 	{
-		std::cout << "[" << fs::absolute(settings.searchPath).parent_path().string() << "] path exists but ";
-		if (settings.searchPath.filename().string().find("*") != std::string::npos)
+		//std::cout << "[" << fs::absolute(search_params_.search_path).parent_path().string() << "] path exists but ";
+		if (search_params_.search_path.filename().string().find("*") != std::string::npos)
 		{
-			std::cout << "filename has wildcards [" << settings.searchPath.filename().string() << "]\n";
+			//std::cout << "filename has wildcards [" << search_params_.search_path.filename().string() << "]\n";
 
-			auto filelist = GetFileList(fs::absolute(settings.searchPath), settings.searchPath.filename().string(), settings.bRecursive);
+			path_search_pattern_ = ConvertPathStringToRegexp(search_params_.search_path.string());
 
-			for (const auto& p : filelist)
+			if (search_params_.recursive)
 			{
-				std::cout << "Path match: " << p.string() << std::endl;
+				recursive_directory_iterator_ = fs::recursive_directory_iterator{ search_params_.search_path.parent_path() };
+			}
+			else
+			{
+				directory_iterator_ = fs::directory_iterator{ search_params_.search_path.parent_path() };
 			}
 		}
 		else
 		{
-			std::cout << "file [" << settings.searchPath.filename().string() << "] does not\n";
+			//std::cout << "file [" << search_params_.search_path.filename().string() << "] does not\n";
+			complete_ = true;
 		}
-		
 	}
 	else
 	{
-		std::cout << " does not exist\n";
+		std::cerr << "File does not exist\n";
 	}
 }
 
-void PathCrawler::stringReplace(std::string& input, const std::string& fromWhat, const std::string& toWhat)
+std::optional<std::filesystem::path> PathCrawler::GetNextFile()
+{
+	if (complete_)
+	{
+		return {};
+	}
+	else if (single_file_)
+	{
+		complete_ = true;
+		return search_params_.search_path;
+	}
+	else
+	{
+		if (search_params_.recursive)
+		{
+			while (recursive_directory_iterator_ != std::filesystem::end(recursive_directory_iterator_))
+			{
+				if (MathcFile(recursive_directory_iterator_->path().string()))
+				{
+					auto p = recursive_directory_iterator_->path();
+					++recursive_directory_iterator_;
+					return p;
+				}
+				++recursive_directory_iterator_;
+			}
+		}
+		else
+		{
+			while (directory_iterator_ != std::filesystem::end(directory_iterator_))
+			{
+				if (MathcFile(directory_iterator_->path().string()))
+				{
+					auto p = directory_iterator_->path();
+					++directory_iterator_;
+					return p;
+				}
+				++directory_iterator_;
+			}
+		}
+
+		complete_ = true;
+		return {};
+	}
+}
+
+void PathCrawler::StringReplace(std::string& input, const std::string& from_what, const std::string& to_what)
 {
 	size_t pos = 0;
-	while ((pos = input.find(fromWhat, pos)) != std::string::npos)
+	while ((pos = input.find(from_what, pos)) != std::string::npos)
 	{
-		input.replace(pos, fromWhat.length(), toWhat);
-		pos += toWhat.length();
+		input.replace(pos, from_what.length(), to_what);
+		pos += to_what.length();
 	}
 }
 
-std::string PathCrawler::ConvertWildcardsToRegexp(const std::string& wcs)
+std::string PathCrawler::ConvertPathStringToRegexp(const std::string& path)
 {
-	std::string searchPattern = wcs;
-	stringReplace(searchPattern, ".", "\\.");
-	stringReplace(searchPattern, "*", ".*");
+	std::string searchPattern = path;
+	StringReplace(searchPattern, "\\", "\\\\");	// escape Windows path symbols
+	StringReplace(searchPattern, ".", "\\.");	// escape dot symbols
+	StringReplace(searchPattern, "*", "[^\\\\]*");	// convert wildcard symbols
 
-	return  "^" + searchPattern + "$";
+	return  "^" + searchPattern + "$";			// require explicit pattern match
 }
 
-std::vector<std::filesystem::path> PathCrawler::GetFileList(const std::filesystem::path& directory, const std::string& filenamePattern, const bool bRecursive)
+bool PathCrawler::MathcFile(const std::filesystem::path& dir)
 {
-	std::vector<fs::path> fileList;
-
-	std::string searchPatter = ConvertWildcardsToRegexp(filenamePattern);
-	
-	std::cout << "file name searchPattern: " << searchPatter << std::endl;
-
-	std::regex regex(searchPatter);
-
-	auto MathcFile = [&regex](const fs::path& dir) -> bool { return (fs::is_regular_file(dir) && std::regex_match(dir.filename().string(), regex)); };
-
-	if (bRecursive)
-	{
-		for (auto const& directory : fs::recursive_directory_iterator{ directory.parent_path() })
-		{
-			if (MathcFile(directory.path()))
-			{
-				fileList.push_back(directory.path());
-			}
-		}
-	}
-	else
-	{
-		for (auto const& directory : fs::directory_iterator{ directory.parent_path() })
-		{
-			if (MathcFile(directory.path()))
-			{
-				fileList.push_back(directory.path());
-			}
-		}
-	}
-
-	return fileList;
+	return fs::is_regular_file(dir) && std::regex_match(dir.string(), path_search_pattern_);
 }
