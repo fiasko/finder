@@ -90,11 +90,11 @@ void PathCrawler::StringReplace(std::string& input, const std::string& from_what
 
 std::string PathCrawler::ConvertPathStringToRegexp(const std::string& path) const {
   std::string searchPattern = path;
-  StringReplace(searchPattern, "\\", "\\\\");     // escape Windows path symbols
-  StringReplace(searchPattern, ".", "\\.");       // escape dot symbols
-  StringReplace(searchPattern, "*", "[^\\\\]*");  // convert wildcard symbols
+  StringReplace(searchPattern, R"(\)", R"(\\)");      // escape Windows path symbols
+  StringReplace(searchPattern, R"(.)", R"(\.)");      // escape dot symbols
+  StringReplace(searchPattern, R"(*)", R"([^\\]*)");  // convert wildcard symbols
 
-  return  "^" + searchPattern + "$";              // add word boundaries
+  return  "^" + searchPattern + "$";                  // add word boundaries
 }
 
 bool PathCrawler::MathcFile(const std::filesystem::path& path) const {

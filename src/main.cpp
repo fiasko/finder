@@ -1,8 +1,8 @@
-#include <iostream>
-#include <thread>
-#include <optional>
 #include <filesystem>
 #include <format>
+#include <iostream>
+#include <optional>
+#include <thread>
 
 #include "finderSettings.h"
 #include "PathCrawler.h"
@@ -25,7 +25,6 @@ int main(int argc, const char* argv[])
 
   std::optional<std::filesystem::path> file;
   while ((file = crawler.GetNextFile()).has_value()) {
-    //std::cout << std::format("File: {}\n", file.value().string());
     finder.SearchFileContent(file.value());
   }
 
