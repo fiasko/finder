@@ -6,31 +6,30 @@
 
 #include "finderSettings.h"
 #include "PathCrawler.h"
+#include "ContentFinder.h"
 
 
 int main(int argc, const char* argv[])
 {
-    // parse finder settings from arguments 
-    auto searchParam = Finder::ParseArguments(argc, argv);
+  // parse finder settings from arguments 
+  auto searchParam = Finder::ParseArguments(argc, argv);
 
-    // Print help and break if needed
-    if (!searchParam.has_value())
-    {
-        Finder::PrintHelp();
-        return 1;
-    }
+  // Print help and break if needed
+  if (!searchParam.has_value()) {
+    Finder::PrintHelp();
+    return 1;
+  }
 
-    // get CPU core count
-    const auto cpuCoreCount = std::thread::hardware_concurrency();
+  PathCrawler crawler(searchParam.value());
+  ContentFinder finder(searchParam.value());
 
-    //std::cout << "Hello, World! with "<< cpuCoreCount <<" CPU cores! argc="<< argc << std::endl;
+  std::optional<std::filesystem::path> file;
+  while ((file = crawler.GetNextFile()).has_value()) {
+    //std::cout << std::format("File: {}\n", file.value().string());
+    finder.SearchFileContent(file.value());
+  }
 
-    PathCrawler crawler(searchParam.value());
-
-    std::optional<std::filesystem::path> file;
-    while ((file = crawler.GetNextFile()).has_value())
-    {
-        std::cout << std::format("File: {}\n", file.value().string());
-    }
-    return 0;
+  std::cout << "WaitToComplete\n";
+  finder.WaitToComplete();
+  return 0;
 }
