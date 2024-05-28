@@ -13,3 +13,22 @@ cmake
 
 ```
   
+# usage
+``` shell
+finder [OPTION]... PATTERN [FILE]
+  -G    PATTERN is basic regular expressions
+  -r    recursive search
+```
+
+example:
+``` shell
+finder "text" "myfile.txt"
+```
+
+``` shell
+finder "text" "myfi*.txt"
+```
+
+``` shell
+finder -r -G "^begin.*" "fodler/"
+```
