@@ -11,3 +11,30 @@ file(GLOB SOURCES "src/*.cpp" "src/*.h")
 
 # Add the executable
 add_executable(finder ${SOURCES})
+
+include(FetchContent)
+FetchContent_Declare(
+  googletest
+  URL https://github.com/google/googletest/archive/305e5a238b3c8d11266fbafd85520fb6b3184851.zip
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(
+  test_finder
+  test/test_argument_parser.cpp
+  test/test_path_crawler.cpp
+)
+
+target_link_libraries(
+  test_finder
+  GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(test_finder)
+
+
