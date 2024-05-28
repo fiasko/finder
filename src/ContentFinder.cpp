@@ -21,6 +21,7 @@ ContentFinder::~ContentFinder() {
 
 void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
   using namespace std::chrono_literals;
+
   std::lock_guard<std::mutex> lg(thread_list_mutex_);
   while (thread_list_.size() >= std::thread::hardware_concurrency()) {
     thread_list_.remove_if([](const std::thread& t) { return t.joinable(); });
@@ -28,7 +29,7 @@ void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
       break;
     }
 
-    // this is ugly, but this architecture has it's limitations...
+    // this is ugly, but this architecture has its limitations...
     std::this_thread::sleep_for(1ms);
   }
 
@@ -59,7 +60,7 @@ void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
   while (f.getline(&line[0], line.size())) {
     std::string_view line_str(&line[0]);
 
-    // search output not bufferd and thread output order is not controlled
+    // search output not bufferd and thread output is not synchronized
     if (search_params_.use_reg_exp) {
       // regexp pattern search
       if (std::regex_match(line_str.data(), re)) {

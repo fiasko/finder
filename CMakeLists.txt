@@ -27,6 +27,7 @@ add_executable(
   test_finder
   test/test_argument_parser.cpp
   test/test_path_crawler.cpp
+  src/PathCrawler.cpp
 )
 
 target_link_libraries(
@@ -36,5 +37,3 @@ target_link_libraries(
 
 include(GoogleTest)
 gtest_discover_tests(test_finder)
-
-
