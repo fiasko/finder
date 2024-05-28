@@ -9,8 +9,8 @@
 namespace Finder
 {
   struct SearchParameters {
-    bool recursive;
-    bool reg_exp_patter;
+    bool recursive_search;
+    bool use_reg_exp;
     std::string search_pattern;
     std::filesystem::path search_path;
   };
@@ -30,10 +30,10 @@ namespace Finder
 
     for (int i = 1; i < argc; i++) {
       if ("-r"s == argv[i]) {
-        searchParam.recursive = true;
+        searchParam.recursive_search = true;
       }
       else if ("-G"s == argv[i]) {
-        searchParam.reg_exp_patter = true;
+        searchParam.use_reg_exp = true;
       }
       else if (searchParam.search_pattern.empty()) {
         searchParam.search_pattern = argv[i];
@@ -45,7 +45,12 @@ namespace Finder
         return {};
       }
     }
-
+    
+    if (searchParam.search_pattern.empty())
+    {
+      return {};
+    }
+    
     if (searchParam.search_path.empty()) {
       searchParam.search_path = ".";
     }

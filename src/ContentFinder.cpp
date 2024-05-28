@@ -54,13 +54,13 @@ void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
   std::ifstream f(file);
   std::array<char, 512> line;
 
-  std::regex re(search_params_.reg_exp_patter ? search_params_.search_pattern : "");
+  std::regex re(search_params_.use_reg_exp ? search_params_.search_pattern : "");
 
   while (f.getline(&line[0], line.size())) {
     std::string_view line_str(&line[0]);
 
     // search output not bufferd and thread output order is not controlled
-    if (search_params_.reg_exp_patter) {
+    if (search_params_.use_reg_exp) {
       // regexp pattern search
       if (std::regex_match(line_str.data(), re)) {
         std::cout << std::format("{}:{}\n", file.string(), line_str);

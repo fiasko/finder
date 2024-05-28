@@ -17,7 +17,7 @@ PathCrawler::PathCrawler(const Finder::SearchParameters& settings)
     // user defined search directory. Initialize required directory iterator and file search pattern
     path_search_pattern_ = ".*";
 
-    if (search_params_.recursive) {
+    if (search_params_.recursive_search) {
       recursive_directory_iterator_ = fs::recursive_directory_iterator{ search_params_.search_path };
     }
     else {
@@ -29,7 +29,7 @@ PathCrawler::PathCrawler(const Finder::SearchParameters& settings)
     // Initialize required directory iterator and path search pattern
     path_search_pattern_ = ConvertPathStringToRegexp(search_params_.search_path.string());
 
-    if (search_params_.recursive) {
+    if (search_params_.recursive_search) {
       recursive_directory_iterator_ = fs::recursive_directory_iterator{ search_params_.search_path.parent_path() };
     }
     else {
@@ -54,7 +54,7 @@ std::optional<std::filesystem::path> PathCrawler::GetNextFile()
   }
   else {
     // find next matching file from the directory
-    if (search_params_.recursive) {
+    if (search_params_.recursive_search) {
       while (recursive_directory_iterator_ != std::filesystem::end(recursive_directory_iterator_)) {
         if (MathcFile(recursive_directory_iterator_->path().string())) {
           auto p = recursive_directory_iterator_->path();
