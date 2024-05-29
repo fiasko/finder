@@ -25,15 +25,18 @@ enable_testing()
 
 add_executable(
   test_finder
-  test/test_argument_parser.cpp
-  test/test_path_crawler.cpp
-  src/PathCrawler.cpp
-)
+  "test/test_argument_parser.cpp"
+  "test/test_path_crawler.cpp"
+  "src/PathCrawler.cpp"
+  "test/test_content_finder.cpp")
 
 target_link_libraries(
   test_finder
   GTest::gtest_main
+  GTest::gmock_main
 )
 
 include(GoogleTest)
 gtest_discover_tests(test_finder)
+
+file(COPY "test/testdata" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
