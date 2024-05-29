@@ -25,6 +25,7 @@ void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
 
   // wait thread slot to become available
   std::unique_lock lk(search_mutex_);
+  // wait untill there are less threads running than available CPU cores
   while (!condition_var_.wait_for(lk, 10ms, [this] { return active_thread_count_ < std::thread::hardware_concurrency(); })) {}
   active_thread_count_++;
 
