@@ -92,8 +92,7 @@ std::string PathCrawler::ConvertPathStringToRegexp(const std::string& path) cons
   std::string searchPattern = path;
   StringReplace(searchPattern, R"(\)", R"(\\)");      // escape Windows path symbols
   StringReplace(searchPattern, R"(.)", R"(\.)");      // escape dot symbols
-  StringReplace(searchPattern, R"(*)", R"([^\\]*)");  // convert wildcard symbols
-
+  StringReplace(searchPattern, R"(*)", R"([^\\/]*)");  // convert wildcard symbols
   return  "^" + searchPattern + "$";                  // add word boundaries
 }
 
