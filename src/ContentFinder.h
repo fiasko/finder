@@ -14,9 +14,10 @@ private:
   
   std::mutex                    search_mutex_;
   std::condition_variable       condition_var_;
+  std::atomic_uint              active_thread_count_;
 
-  std::mutex                    thread_list_mutex_;
-  std::list<std::thread>        thread_list_;
+  //std::mutex                    thread_list_mutex_;
+  //std::list<std::thread>        thread_list_;
 
 public:
   // Not copyable or movable

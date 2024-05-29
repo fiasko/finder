@@ -9,12 +9,13 @@
 #include <chrono>
 
 ContentFinder::ContentFinder(const Finder::SearchParameters& settings)
-  : search_params_(settings)
+  : search_params_(settings),
+  active_thread_count_(0)
 {
 }
 
 ContentFinder::~ContentFinder() {
-  if (!thread_list_.empty()) {
+  if (active_thread_count_ > 0) {
     WaitToComplete();
   }
 }
@@ -22,32 +23,21 @@ ContentFinder::~ContentFinder() {
 void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
   using namespace std::chrono_literals;
 
-  std::lock_guard<std::mutex> lg(thread_list_mutex_);
-  while (thread_list_.size() >= std::thread::hardware_concurrency()) {
-    thread_list_.remove_if([](const std::thread& t) { return t.joinable(); });
-    if (thread_list_.size() < std::thread::hardware_concurrency()) {
-      break;
-    }
+  // wait thread slot to become available
+  std::unique_lock lk(search_mutex_);
+  while (!condition_var_.wait_for(lk, 10ms, [this] { return active_thread_count_ < std::thread::hardware_concurrency(); })) {}
+  active_thread_count_++;
 
-    // this is ugly, but this architecture has its limitations...
-    std::this_thread::sleep_for(1ms);
-  }
-
-  thread_list_.emplace_back(&ContentFinder::ContentSerchThread, this, file);
+  std::thread t(&ContentFinder::ContentSerchThread, this, file);
+  t.detach();
 }
 
 void ContentFinder::WaitToComplete() {
-  try {
-    for (auto& t : thread_list_) {
-      t.join();
-    }
-    thread_list_.clear();
-  }
-  catch (const std::system_error& e) {
-    std::cerr << std::format("Thread error: {}", e.what());
-  }
-  catch (const std::exception& e) {
-    std::cerr << std::format("WaitToComplete Eerror: {}", e.what());
+  using namespace std::chrono_literals;
+
+  std::unique_lock lk(search_mutex_);
+  if (!condition_var_.wait_for(lk, 1min, [this] { return active_thread_count_ == 0; })) {
+    std::cerr << "WaitToComplete timeout!\n";
   }
 }
 
@@ -74,4 +64,8 @@ void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
       }
     }
   }
+
+  // signal about thread slot being available
+  active_thread_count_--;
+  condition_var_.notify_one();
 }
