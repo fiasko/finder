@@ -2,10 +2,11 @@
 #define CONTENTFINDER_H_
 
 #include "finderSettings.h"
+
 #include <atomic>
-#include <thread>
-#include <list>
 #include <condition_variable>
+#include <list>
+#include <thread>
 
 class ContentFinder
 {
@@ -15,9 +16,6 @@ private:
   std::mutex                    search_mutex_;
   std::condition_variable       condition_var_;
   std::atomic_uint              active_thread_count_;
-
-  //std::mutex                    thread_list_mutex_;
-  //std::list<std::thread>        thread_list_;
 
 public:
   // Not copyable or movable
@@ -35,6 +33,5 @@ public:
 private:
   void ContentSerchThread(const std::filesystem::path& file);
 };
-
 
 #endif  // CONTENTFINDER_H_

@@ -1,12 +1,12 @@
 #include "ContentFinder.h"
 
-#include <iostream>
-#include <fstream>
 #include <array>
-#include <string_view>
-#include <format>
-#include <regex>
 #include <chrono>
+#include <iostream>
+#include <format>
+#include <fstream>
+#include <regex>
+#include <string_view>
 
 ContentFinder::ContentFinder(const Finder::SearchParameters& settings)
   : search_params_(settings),
@@ -23,7 +23,6 @@ ContentFinder::~ContentFinder() {
 void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
   using namespace std::chrono_literals;
 
-  // wait thread slot to become available
   std::unique_lock lk(search_mutex_);
   // wait untill there are less threads running than available CPU cores
   while (!condition_var_.wait_for(lk, 10ms, [this] { return active_thread_count_ < std::thread::hardware_concurrency(); })) {}
@@ -44,14 +43,14 @@ void ContentFinder::WaitToComplete() {
 
 void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
   std::ifstream f(file);
-  std::array<char, 512> line;
+  std::array<char, 512> line; // magick number. Unlimited line lenght not supported yet
 
   std::regex re(search_params_.use_reg_exp ? search_params_.search_pattern : "");
 
   while (f.getline(&line[0], line.size())) {
     std::string_view line_str(&line[0]);
 
-    // search output not bufferd and thread output is not synchronized
+    // search output not synchronized
     if (search_params_.use_reg_exp) {
       // regexp pattern search
       if (std::regex_match(line_str.data(), re)) {
