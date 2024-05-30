@@ -27,8 +27,10 @@ add_executable(
   test_finder
   "test/test_argument_parser.cpp"
   "test/test_path_crawler.cpp"
+  "test/test_content_finder.cpp"
+  
   "src/PathCrawler.cpp"
-  "test/test_content_finder.cpp")
+  "src/ContentFinder.cpp")
 
 target_link_libraries(
   test_finder

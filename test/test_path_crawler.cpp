@@ -30,14 +30,6 @@ const std::vector<std::string>& GetTestfileList() {
   return list;
 }
 
-//TEST(PathCrawler, StringReplace) {
-//  Finder::SearchParameters settings = { false, false, "X", "." };
-//
-//  std::string str = "test\\string_:&aa";
-//  //EXPECT_CALL(pc, StringReplace).Times(AtLeast(1));
-//  //pc.StringReplace(str, "\\", " ");
-//  //EXPECT_STREQ(str.c_str(), "test string_:&aa");
-// }
 TEST(PathCrawler, BasicTestdataListing) {
   Finder::SearchParameters settings = {false, false, "X", "testdata" };
 
@@ -76,7 +68,7 @@ TEST(PathCrawler, RecursiveTestdataListing) {
 
 TEST(PathCrawler, FilteredTestdataListing) {
   std::string file_name_filter = "*32*.txt"; // file name filter applied to PathCrawler file search
-  std::regex  path_name_filter_r(R"(.*testdata[/\\][^/\\]*32.*\.txt$)");
+  std::regex  path_name_filter_r(R"(.*testdata[/\\][^/\\]*32[^/\\]*\.txt$)");
   Finder::SearchParameters settings = { false, false, "X", std::filesystem::path("testdata") / file_name_filter };
 
   // get filtered test file list expected to be found from the filtered test data directory

@@ -10,12 +10,12 @@
 
 class ContentFinder
 {
-private:
-  Finder::SearchParameters      search_params_;
+protected:
+  Finder::SearchParameters          search_params_;
   
-  std::mutex                    search_mutex_;
-  std::condition_variable       condition_var_;
-  std::atomic_uint              active_thread_count_;
+  mutable std::mutex                search_mutex_;
+  mutable std::condition_variable   condition_var_;
+  std::atomic_uint                  active_thread_count_;
 
 public:
   // Not copyable or movable
@@ -28,10 +28,11 @@ public:
   void SearchFileContent(const std::filesystem::path& file);
 
   // Wait all content search threads to finish
-  void WaitToComplete();
+  void WaitToComplete() const;
 
-private:
+protected:
   void ContentSerchThread(const std::filesystem::path& file);
+  virtual void PrintOutput(const std::filesystem::path& file, const std::string_view& content) const;
 };
 
 #endif  // CONTENTFINDER_H_

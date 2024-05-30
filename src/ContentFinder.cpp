@@ -28,11 +28,12 @@ void ContentFinder::SearchFileContent(const std::filesystem::path& file) {
   while (!condition_var_.wait_for(lk, 10ms, [this] { return active_thread_count_ < std::thread::hardware_concurrency(); })) {}
   active_thread_count_++;
 
+
   std::thread t(&ContentFinder::ContentSerchThread, this, file);
   t.detach();
 }
 
-void ContentFinder::WaitToComplete() {
+void ContentFinder::WaitToComplete() const {
   using namespace std::chrono_literals;
 
   std::unique_lock lk(search_mutex_);
@@ -54,13 +55,13 @@ void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
     if (search_params_.use_reg_exp) {
       // regexp pattern search
       if (std::regex_match(line_str.data(), re)) {
-        std::cout << std::format("{}:{}\n", file.string(), line_str);
+        PrintOutput(file, line_str);
       }
     }
     else {
       // basic string search
       if (line_str.find(search_params_.search_pattern) != std::string_view::npos) {
-        std::cout << std::format("{}:{}\n", file.string(), line_str);
+        PrintOutput(file, line_str);
       }
     }
   }
@@ -68,4 +69,9 @@ void ContentFinder::ContentSerchThread(const std::filesystem::path& file) {
   // signal about thread slot being available
   active_thread_count_--;
   condition_var_.notify_one();
+}
+
+void ContentFinder::PrintOutput(const std::filesystem::path& file, const std::string_view& content) const
+{
+  std::cout << std::format("{}:{}\n", file.string(), content);
 }
