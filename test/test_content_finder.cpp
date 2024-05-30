@@ -12,10 +12,9 @@ using ::testing::AtLeast;
 
 class MockContentFinder : public ContentFinder {
 public:
-  MockContentFinder(const Finder::SearchParameters& settings) : ContentFinder(settings) {
+  MockContentFinder(const Finder::SearchParameters& settings) : ContentFinder(settings) {}
 
-  }
-
+  // Override SearchFileContent to execute search in main thread
   void SearchFileContent(const std::filesystem::path& file) {
     active_thread_count_++;
     ContentSerchThread(file);
@@ -35,4 +34,3 @@ TEST(ContentFinder, Basic) {
 
   cf.SearchFileContent(expected_path);
 }
-
