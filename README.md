@@ -9,7 +9,10 @@ This application is file content search tool similar to grep. Basic functionalit
 # Build
 ``` shell
 cd finder
-cmake
+mkdir build
+cd build
+cmake ..
+cmake --build .
 ```
   
 # usage
@@ -31,3 +34,6 @@ finder "text" "myfi*.txt"
 ``` shell
 finder -r -G "^begin.*" "folder/"
 ```
+
+# Testig
+To run tests use ctest. You can also run native google test by running test_finder.exe in a directry with the testdata directory (eg. test or build directory).
