@@ -1,5 +1,5 @@
 # grep like finder tool
-This tool was developed in one week from sratch. AI tools were not used intentionally other than getting initial instructions how to setup new CMake project.
+This tool was developed from sratch in one week. It was originally as a learning assignment.
 This application is file content search tool similar to grep. Basic functionality is to search string from file or files. Both basic string search and regular expression search patterns are supported. The application searches each file in parallel thread to speed things up when large directories are searched.
 
 # Dependencies
